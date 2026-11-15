@@ -1,6 +1,0 @@
-horizon,model,MAE,RMSE
-7,Baseline 持续性(h天后=今天),4.927,6.304
-7,"Model A (Ridge, 纯AIS)",3.68,4.684
-7,"Model B (Ridge, AIS+SAR)",3.715,4.76
-7,"Model A (HGB, 纯AIS)",5.761,7.127
-7,"Model B (HGB, AIS+SAR)",5.667,6.953
