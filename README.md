@@ -1,91 +1,78 @@
-# Machine Learning for Social Science
+# AIS + SAR Anchorage Vessel Activity Prediction (LA–Long Beach)
 
-Interactive computational tutorials for asking consequential social questions, choosing empirical methods, evaluating evidence, and revising a research judgment.
+STATS 201 (Autumn 2026) term project pilot, Keyue Li (@Keyue-Li).
 
-Instructor and maintainer: **Luyao (Sunshine) Zhang, Duke Kunshan University**.
+**Research question:** Can Sentinel-1 SAR detections improve short-term prediction of
+anchorage vessel activity at the Ports of Los Angeles and Long Beach beyond historical AIS?
 
-## Start here
+**Pilot result (negative, reported honestly):** on a chronological held-out test
+(2025-07-01 to 2025-12-31), Ridge MAE is 3.57 (AIS-only) vs 3.61 (AIS+SAR) at h = 1 day,
+and 3.68 vs 3.72 at h = 7 days. SAR features add no measurable improvement in this
+region and period. See the proposal PDF for interpretation and limits.
 
-## Week 3 · Explanation and Prediction
+## Data
 
-A research team needs to know what a recorded label means, how to describe patterns, how to predict outcomes for new cases and how to compare competing methods. These four labs follow those decisions from robot observations and text requests to a benchmark comparison.
+The analysis panel is published on Hugging Face:
 
-| Read the walkthrough | What you will learn | Run the lab |
-|---|---|---|
-| [01 Measurement](modules/01-measurement/README.md#week-3-measurement) | Decode a stored answer in its own record. Use two robot frames to see why position 2 can resolve to different reference labels. | [Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/01-measurement/week03_01_robot_measurement.ipynb) |
-| [02 Explanation](modules/02-explanation/README.md) | Turn text into features, group similar requests and judge a proposed theme from cluster sizes and center terms. | [Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/02-explanation/week03_02_unsupervised_explanation.ipynb) |
-| [03 Prediction](modules/03-prediction/README.md) | Fit a classifier using labeled images from other robot runs. Compare a score, decision, reference and baseline on held-out frames. | [Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/03-prediction/week03_03_robot_prediction.ipynb) |
-| [04 Evaluation](modules/04-evaluation/README.md) | Compare methods on shared test folds. Read how log loss and balanced accuracy answer different questions and trace one design choice in TabArena. | [Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/04-evaluation/week03_04_tabarena_evaluation.ipynb) |
+- Dataset: `DKU-STATS201-Autumn2026/<dataset-name>` <!-- TODO: 上传后替换为确切数据集名 -->
+- Version used in the proposal: <!-- TODO: 填 commit/revision，例如 main @ <commit-hash> -->
 
-Each walkthrough starts with a short learning summary, then traces the algorithm in pseudocode. The guide explains the statistics and plots alongside the results and closes with conclusions and assumptions. Read the saved examples and galleries, expand the code for any cell, and consider a question from another field before running the lab. For Wednesday's paper discussion, see the [TabArena research case](modules/04-evaluation/README.md#research-case--tabarena).
+Raw AIS/SAR pulls require a Global Fishing Watch API token and are NOT included
+(GFW terms, CC BY-NC). Only the aggregated anchorage-day panel is redistributed.
 
-## Week 2 · Multimodal Data and Measurement
+## Environment
 
-[Open the Week 2 notebook in Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/01-measurement/01_week2_data_descriptor_release.ipynb)
+```bash
+python -m pip install -r requirements.txt
+```
 
-Compare actual museum images and catalogue text, inspect what a model similarity score means, then develop your own checked measurement and reusable dataset. The default preview replays verified original-model encodings without a GPU or model download. Three filled project starters cover music, development finance and coastal heritage; the [Measurement guide](modules/01-measurement/README.md) supplies the recent publication-linked menu, plain-language governance definitions and review/release workflow.
+Tested with: Python 3.11 (Anaconda), numpy 2.4.6, scipy 1.16.3, scikit-learn 1.7.2,
+matplotlib 3.11.2, gfw-api-python-client 1.4.0.
 
-Weekly reflections are individual. Canvas tools randomize the temporary classroom groups each day. By Sunday November 8, 2026, 23:00 China Standard Time, update your proposal and link actual readable dataset v0.1 under the instructor-confirmed course organization. The reflection remains at most two A4 pages, Times New Roman 12 pt, with one project figure. The shared assistant preview adds no deployment requirement.
+## Reproduce the pilot
 
+1. (Optional, token required) Pull raw data. Set your token first — never commit it:
 
-[Open the revised Week 1 Wednesday notebook in Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/00-foundations/02_week1_research_innovation.ipynb)
+   ```bash
+   export GFW_API_TOKEN="<your token>"
+   python scripts/pull_gfw_anchorages.py ais 2024-01-01 2025-12-31
+   python scripts/pull_gfw_anchorages.py sar 2024-01-01 2025-12-31
+   ```
 
-Wednesday Research addresses Monday's feedback on originality, empirical design and data access before the Innovation canvas. It adds a seven-resource publication-linked data catalog, three small real-data excerpts and a research-design form. See [the Foundations guide](modules/00-foundations/README.md) for the distinction between observed data, published summaries and synthetic tutorials, access conditions, provenance and the short visual reflection.
+   Skip this step if you use the released Hugging Face panel instead.
 
+2. Run the analysis and model comparison:
 
-[Open the Week 1 Day 1 notebook in Colab](https://colab.research.google.com/github/sunshineluyao/ml4ss/blob/main/modules/00-foundations/01_questions_evidence_methods.ipynb)
+   ```bash
+   python scripts/analysis_anchorage.py
+   ```
 
-1. Save a notebook copy in Drive.
-2. Read the opening purpose and learning-objective map; work individually or in a group of 1–3.
-3. Complete the student-input forms in Parts 1–3. In Part 3, run each filled teaching example, read its printed output, replace the example with your own checked work, and rerun the inline review. No ZIP or file download is required.
+## Expected output / check
 
-## The Day 1 investigation
+The script writes the model comparison tables to `data/` and figures to `figures/`.
+You should reproduce these test-set numbers (Ridge):
 
-The notebook has exactly three top-level parts, with numbered subsections:
+| horizon | model | MAE | RMSE |
+|---|---|---|---|
+| 1 | Baseline (persistence) | 4.716 | 6.189 |
+| 1 | Model A (Ridge, AIS only) | 3.572 | 4.612 |
+| 1 | Model B (Ridge, AIS+SAR) | 3.610 | 4.618 |
+| 7 | Baseline (persistence) | 4.927 | 6.304 |
+| 7 | Model A (Ridge, AIS only) | 3.680 | 4.684 |
+| 7 | Model B (Ridge, AIS+SAR) | 3.715 | 4.760 |
 
-| Part | Student activity | What changes |
-|---|---|---|
-| 1. Learn and experiment with research methods | Read the concepts; record an initial question and expectation; change proxy noise, budget share, or seed. | A shared 600-person simulation and its numerical results. |
-| 2. Discover and verify literature on your question | Change the topic, comparison topic, year range, retrieval cap, or source mode; inspect and verify records. | Bibliographic discovery and literature charts. |
-| 3. Explain, reflect, and display your investigation | Replace filled examples with your finding, revision, next step, innovation canvas, manual audit, and two original-source checks. | Your responses print below each cell and appear together in the final inline review. |
+Sanity check: Model A beats the persistence baseline at both horizons; Model B does not
+beat Model A. If your run differs beyond rounding, check the chronological split
+(train ends 2025-06-30) first.
 
-Every section identifies **READ & LEARN**, **STUDENT INPUT**, **RUN & OBSERVE**, or **HUMAN CHECK**. All 26 form fields have definitions, defaults, allowed values, examples, and expected effects. The package guide explains NumPy, pandas, Matplotlib, scikit-learn, IPython, the standard-library tools, and alternatives linked to official documentation.
+## Repository layout
 
-`TOPIC` changes literature discovery. `PURPOSE` and `CONTEXT` record the student's intended purpose and setting; they do not select a model or apply a geographic filter. All numerical methods use the common simulated case. For a controlled experiment, change one parameter and keep the seed fixed.
+- `scripts/pull_gfw_anchorages.py` — monthly-chunked GFW pulls for official anchorages F+G (33 CFR 110.214)
+- `scripts/pull_gfw.py` — earlier bounding-box version (kept for reference)
+- `scripts/analysis_anchorage.py` — panel construction, leak-free lag features, Ridge/HGB A/B comparison
+- `data/` — small result tables (raw pulls excluded; see HF dataset)
+- `figures/` — proposal figures
 
-After changing an analysis setting, run all cells. After changing only Part 3 text, run each edited input cell and the final inline review. The review detects stale analysis settings. Example text and source/search statuses are clearly labeled; students must replace the examples and perform their own checks. If saving or downloading is unavailable, copy displayed responses and required figures into the course-approved submission channel before closing the session. When saving is available, retain an instructor-accessible Colab copy with outputs.
+## Code revision
 
-The tutorial includes motivation, philosophical and mathematical definitions, pseudocode, executable CPU examples, real literature metadata, visualization outputs, guiding questions, and a recorded investigation. Its numerical data are explicitly synthetic. Automated literature method labels require human verification. Database-wide trend counts are distinguished from the distribution of a retrieved sample. Frontier papers are inspected; their large models are not executed in this Day 1 tutorial.
-
-## Modules
-
-| Folder | Purpose |
-|---|---|
-| `modules/00-foundations/` | Questions, evidence, and methods. Day 1 notebook available. |
-| `modules/01-measurement/` | Week 2 multimodal measurement, dataset critique and data-descriptor release. |
-| `modules/02-explanation/` | Week 3 methods lab, including unlabeled text clustering. |
-| `modules/03-prediction/` | Week 3 robot completion and held-out evaluation. |
-| `modules/04-evaluation/` | Week 3 TabArena case and standalone Colab for evaluating prediction methods. |
-| `modules/05-causal-inference/` | Future causal inference tutorials. |
-| `modules/06-optimization/` | Future decision and optimization tutorials. |
-| `modules/07-frontier-methods/` | Future evaluation of emerging methods. |
-
-`collaborative-learning/` reserves notebook locations for think-pair-share, workshops, symposia, exhibitions, peer review, reflection activities, and certificates. These directories are structural placeholders, not claims that those tutorials are released.
-
-## Repository scope
-
-This repository contains interactive code notebooks and supporting repository structure. Course slides, agendas, release packages, student submissions, reflections, grades, and identifiable education-study records belong in the course's approved communication and storage channels.
-
-## Reuse and sources
-
-Original executable code is MIT licensed. Original instructional prose and original conceptual visualizations in the notebooks are available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). OpenAlex bibliographic metadata are CC0; linked publications and any third-party materials retain their own licenses. The notebook records source URLs and retrieval times. Cite individual scholarly sources as well as this teaching resource when appropriate.
-
-## Environment and verification
-
-The core uses Python, NumPy, pandas, Matplotlib, scikit-learn, and IPython, all normally present in Colab. `requirements.txt` provides compatible local installation ranges. No hosted generative-AI account or GPU is required. Network retrieval is optional because the notebook embeds a dated metadata sample. A zero-match fallback remains visible and does not fabricate sources.
-
-The revised Wednesday notebook contains 25 executable cells. The October 28 revision was executed locally in real in-process IPython with zero cell errors and saved rich/text outputs. Focused checks cover filled Part 3 defaults, immediate printed responses, the complete inline review, edited answer/canvas/audit/source refresh including Unicode, cleared-field status, all four stale-analysis guards, and absence of ZIP creation. Execution inside a signed-in hosted Google Colab runtime was not performed.
-
-
-Current Week 1 reading policy: Active research literature uses the rolling window October 27 2024 to October 27 2026, in leading journals or main conference proceedings. Older classics are retained only with a verified Nobel or Turing author exception. Dataset observations, provider instructions, course policies and original-paper bibliographies are source records rather than new reading recommendations. The classroom A2 worksheet records a prediction before Colab and an observed result and revised design after it. The individual reflection is a separate PDF of at most two A4 pages, named netID_LastName_Firstname.pdf, attached to a reply on the Ed reflection post.
-
+<!-- TODO: 提交后填 commit hash，例如 v1.0.0 或 main @ abc1234 -->
