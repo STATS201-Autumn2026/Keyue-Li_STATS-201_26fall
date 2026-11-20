@@ -14,8 +14,8 @@ region and period. See the proposal PDF for interpretation and limits.
 
 The analysis panel is published on Hugging Face:
 
-- Dataset: `DKU-STATS201-Autumn2026/<dataset-name>` <!-- TODO: 上传后替换为确切数据集名 -->
-- Version used in the proposal: <!-- TODO: 填 commit/revision，例如 main @ <commit-hash> -->
+- Dataset: [`DKU-STATS201-Autumn2026/Keyue_Li`](https://huggingface.co/datasets/DKU-STATS201-Autumn2026/Keyue_Li)
+- Version used in the proposal: dataset v1.0; the exact code commit is pinned in the proposal PDF (PS1)
 
 Raw AIS/SAR pulls require a Global Fishing Watch API token and are NOT included
 (GFW terms, CC BY-NC). Only the aggregated anchorage-day panel is redistributed.
@@ -65,6 +65,18 @@ Sanity check: Model A beats the persistence baseline at both horizons; Model B d
 beat Model A. If your run differs beyond rounding, check the chronological split
 (train ends 2025-06-30) first.
 
+## Attempt 2 robustness checks (added after peer feedback)
+
+`python scripts/analysis_attempt2.py` adds two checks:
+
+1. **Per-site models.** Models A and B are fit separately for Anchorage F and Anchorage G
+   on the same chronological split. Expected h = 1 MAE: F 3.17 (A) vs 3.26 (B);
+   G 2.64 (A) vs 2.69 (B). The negative SAR result holds at each site.
+2. **2024 Q4 walk-forward.** Combined panel, train through 2024-08-15, test on the
+   near-empty 2024-08-16 to 2024-12-31 window (88% zero-occupancy days). Expected h = 1 MAE:
+   6.53 (A) vs 8.70 (B); persistence baseline 0.62. SAR features degrade the model during
+   the regime switch.
+
 ## Repository layout
 
 - `scripts/pull_gfw_anchorages.py` — monthly-chunked GFW pulls for official anchorages F+G (33 CFR 110.214)
@@ -75,4 +87,5 @@ beat Model A. If your run differs beyond rounding, check the chronological split
 
 ## Code revision
 
-<!-- TODO: 提交后填 commit hash，例如 v1.0.0 或 main @ abc1234 -->
+The PS1 proposal pins the exact commit hash used for the reported results. This README
+always describes the latest `main`.
